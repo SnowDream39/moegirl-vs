@@ -1,39 +1,26 @@
-# moegirl-vs
+# 萌娘百科虚拟歌手条目生成工具
 
-This template should help get you started developing with Vue 3 in Vite.
+## 简介
 
-## Recommended IDE Setup
+利用 [vocaDB](https://vocadb.org) 的数据。
 
-[VSCode](https://code.visualstudio.com/) + [Volar](https://marketplace.visualstudio.com/items?itemName=Vue.volar) (and disable Vetur).
+除此之外还放了一些额外功能，比如查看 [billboard](https://www.billboard-japan.com/charts/detail?a=niconico)。尚未完成的小功能而已。
 
-## Type Support for `.vue` Imports in TS
+从之前的 Electron 应用 [](https://github.com/SnowDream39/MGP-VS-Tool) 迁移而来。迁移未完成。
 
-TypeScript cannot handle type information for `.vue` imports by default, so we replace the `tsc` CLI with `vue-tsc` for type checking. In editors, we need [Volar](https://marketplace.visualstudio.com/items?itemName=Vue.volar) to make the TypeScript language service aware of `.vue` types.
+## 可能可以优化的地方
 
-## Customize configuration
+歌手名称翻译。
 
-See [Vite Configuration Reference](https://vite.dev/config/).
+## 关于 STAFF 标注
 
-## Project Setup
+vocaDB 上的 STAFF 标注有 `categories` 和 `effectiveRoles` 两个字段，这两者要么相同，要么其中一个是 `Default` 或者 `Other`。
 
-```sh
-pnpm install
-```
+如果 `categories` 中包含 `Producer`，那么实际的角色可能会完整标注，也可能省略掉。如果省略了，程序会默认生成“词·曲”，请自行看情况修改。
 
-### Compile and Hot-Reload for Development
+## 技术
 
-```sh
-pnpm dev
-```
+- [Vue](https://cn.vuejs.org) 作为前端框架。
+- 日语注音工具是 [kuroshiro](https://kuroshiro.org/README.zh-cn.html)。
 
-### Type-Check, Compile and Minify for Production
-
-```sh
-pnpm build
-```
-
-### Lint with [ESLint](https://eslint.org/)
-
-```sh
-pnpm lint
-```
+把仓库 clone 一份是不能直接使用的，因为 public 文件夹不提供。
