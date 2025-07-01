@@ -1,16 +1,39 @@
+import nunjucks from 'nunjucks'
 import { DateTime } from 'luxon'
-import * as ejs from 'ejs'
-import entryTemplateUrl from './templates/entry.ejs?asset'
-import categoryNames from './templates/categories.json'
-import synthesizerNames from './templates/synthesizers.json'
-import baseVoicebanks from '../../../../resources/vocalists/baseVoicebanks.json'
-import vocalistOriginalNames from '../../../../resources/vocalists/originalNames.json'
-import vocalistTranslatedNames from '../../../../resources/vocalists/translatedNames.json'
-import { get_lyrics } from '../websites/vocadb'
+import { OpenAIClient } from 'openai-fetch'
+
+import template from './templates/entry.njk?raw'
 import { join } from './wikitext'
-import Kuroshiro from 'Kuroshiro'
-import KuromojiAnalyzer from 'kuroshiro-analyzer-kuromoji'
-import { av2bv, bv2av } from './avbv'
+import { get_lyrics } from '../websites/vocadb'
+import { av2bv } from './avbv'
+
+//  ========  导入名字   =======
+import b from '@/assets/vocalists/baseVoicebanks.json'
+import o from '@/assets/vocalists/originalNames.json'
+import t from '@/assets/vocalists/translatedNames.json'
+import c from './templates/categories.json'
+import s from './templates/synthesizers.json'
+
+const baseVoicebanks = b as Record<string, number>
+const vocalistOriginalNames = o as Record<number, string>
+const vocalistTranslatedNames = t as Record<string, string>
+const categoryNames = c as Record<string, string>
+const synthesizerNames = s as Record<string, string>
+
+//  ========  类型定义  =========
+
+interface VocadbArtist {
+  id: string
+  name: string
+  categories: string
+  effectiveRoles: string
+  isSupport: boolean
+  artist: {
+    id: string
+    name: string
+    artistType: string
+  }
+}
 
 interface Service {
   abbr: string
@@ -30,6 +53,8 @@ interface UploadGroup {
   services: Service[]
 }
 
+//   =========  全局变量  ==========
+
 /**
  * 来自 vocadb 的原始数据
  */
@@ -45,6 +70,8 @@ let synthesizers: string[] = []
 let pvs: Pv[] = []
 let uploadGroups: UploadGroup[] = []
 
+// ========== 小工具函数  ==========
+
 function addToGroup(obj: any, key: string, value: unknown) {
   if (!obj[key]) {
     obj[key] = []
@@ -52,22 +79,30 @@ function addToGroup(obj: any, key: string, value: unknown) {
   obj[key].push(value)
 }
 
-function sanitizePath(filePath: string) {
-  const invalidChars = /[<>:"/\\|?*]/g // 常见非法字符
-  return filePath.replace(invalidChars, '')
-}
-
-async function selectPath() {
-  const { canceled, filePath } = await dialog.showSaveDialog({
-    title: '保存文件',
-    defaultPath: sanitizePath(makeTitle()) + (app.isPackaged ? '.txt' : '.wikitext'), // 一般用户还是用 txt 吧
+async function toPhotranse(lyrics: string) {
+  const client = new OpenAIClient({
+    baseUrl: 'https://cors.vocabili.top/https://kuroshiro-api.dream39snow.workers.dev/v1',
+    apiKey: '123',
   })
 
-  if (canceled) {
-    return { success: false, error: '用户取消了保存' }
-  }
-  return { success: true, filePath: filePath }
+  const res = await client.createChatCompletion({
+    model: 'hirakana-furigana',
+    messages: [
+      { role: 'system', content: '你是一个假名转换助手。' },
+      { role: 'user', content: lyrics },
+    ],
+  })
+
+  const rubyLyrics = res.choices[0].message.content
+  if (!rubyLyrics) return lyrics
+  const photransLyrics = rubyLyrics.replace(
+    /<ruby>(.*?)<rp>\(<\/rp><rt>(.*?)<\/rt><rp>\)<\/rp><\/ruby>/g,
+    (_match, kanji, reading) => `{{Photrans|${kanji}|${reading}}}`,
+  )
+  return photransLyrics
 }
+
+//  ========== 工作流函数  =============
 
 function makeTitle() {
   return songData.song.name
@@ -77,12 +112,12 @@ function makeAllTitles() {
   return [songData.song.name] + songData.additionalNames.split(', ')
 }
 
-function getVocalistName(artist, translated: boolean) {
-  let baseId: string
+function getVocalistName(artist: VocadbArtist, translated: boolean) {
+  let baseId: number
   if (artist.id in baseVoicebanks) {
     baseId = baseVoicebanks[artist.id]
   } else {
-    baseId = artist.id
+    baseId = Number(artist.id)
   }
   if (translated && baseId in vocalistTranslatedNames) {
     return vocalistTranslatedNames[baseId]
@@ -205,7 +240,7 @@ function makePvs() {
     }
   }
 
-  pvs.sort((a, b) => a.upload - b.upload)
+  pvs.sort((a, b) => a.upload.toMillis() - b.upload.toMillis())
   for (let i = 1; i < pvs.length; i++) {
     if (pvs[i].upload.toMillis() == pvs[i - 1].upload.toMillis()) {
       pvs[i].sameDay = true
@@ -232,17 +267,6 @@ function makeBiliVideo() {
   return ''
 }
 
-async function toPhotranse(lyrics: string) {
-  const kuroshiro = new Kuroshiro()
-  await kuroshiro.init(new KuromojiAnalyzer())
-  const rubyLyrics = await kuroshiro.convert(lyrics, { mode: 'furigana', to: 'hiragana' })
-  const photransLyrics = rubyLyrics.replace(
-    /<ruby>(.*?)<rp>\(<\/rp><rt>(.*?)<\/rt><rp>\)<\/rp><\/ruby>/g,
-    (_match, kanji, reading) => `{{Photrans|${kanji}|${reading}}}`,
-  )
-  return photransLyrics
-}
-
 async function makeLyrics(type: 'Original' | 'Translation') {
   for (const lyricInfo of songData.lyricsFromParents) {
     if (type === 'Original') {
@@ -262,6 +286,8 @@ async function makeLyrics(type: 'Original' | 'Translation') {
 
 async function makeWikitext(): Promise<string> {
   const data = {
+    l: '{{',
+    r: '}}',
     staff: makeDisplayStaff(),
     title: makeTitle(),
     allTitles: makeAllTitles(),
@@ -278,28 +304,33 @@ async function makeWikitext(): Promise<string> {
     join: join,
   }
 
-  const template = fs.readFileSync(entryTemplateUrl, { encoding: 'utf-8' })
-  return ejs.render(template, data)
+  console.log(data.uploadGroups)
+
+  const env = nunjucks.configure('views', {
+    autoescape: false,
+  })
+
+  env.addFilter('join', join)
+  env.addFilter('date', function (dateObj: DateTime, formatStr: string = 'yyyy年M月d日') {
+    try {
+      console.log(dateObj)
+      return dateObj.toFormat(formatStr)
+    } catch {
+      return 'Invalid Date'
+    }
+  })
+  return env.renderString(template, data)
 }
 
-export async function output(data) {
+export async function render(data: any) {
   songData = data
   staff = {}
   producers = []
   synthesizers = []
   pvs = []
   uploadGroups = []
-  try {
-    staff = await makeStaff()
-    ;({ pvs, uploadGroups } = makePvs())
-    const content = await makeWikitext()
-    const result = await selectPath()
-    if (result.success) {
-      fs.writeFileSync(result.filePath!, content, 'utf-8')
-    }
-    return { success: true }
-  } catch (error) {
-    console.error('文件保存失败：', error)
-    return { success: false }
-  }
+  staff = await makeStaff()
+  ;({ pvs, uploadGroups } = makePvs())
+  const content = await makeWikitext()
+  return content
 }

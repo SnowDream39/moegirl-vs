@@ -1,3 +1,35 @@
+<template>
+  <h1>vocadb搜索</h1>
+  <span class="noRefererConfig" style="display: none;"></span>
+  <el-button type="primary" @click="router.push('/menu')">返回目录</el-button>
+  <div class="search-box">
+    <el-input v-model="searchTitle" placeholder="歌名" @keyup.enter="searchSong">
+      <template #append>
+        <el-button :icon="Search" @click="searchSong" />
+      </template>
+    </el-input>
+  </div>
+  <el-table :data="songsData">
+    <el-table-column label="封面" width="200">
+      <template #default="scope">
+        <img :src="scope.row.mainPicture.urlThumb" alt="image" referrerpolicy="no-referrer" />
+      </template>
+    </el-table-column>
+    <el-table-column prop="name" label="歌名" />
+    <el-table-column prop="artistString" label="作者" />
+    <el-table-column prop="songType" label="类型" width="100" />
+    <el-table-column label="操作" width="120">
+      <template #default="scope">
+        <el-button type="primary" @click="selectSong(songsData[scope.$index].id)">选择歌曲</el-button>
+      </template>
+    </el-table-column>
+  </el-table>
+
+  <el-dialog v-model="showDialog" title="选择歌曲" width="800">
+    <SongDialog v-if="true" :SongData="selectedSongData" :key="selectedSongData?.song.id" />
+  </el-dialog>
+</template>
+
 <script lang="ts" setup>
 import { ref } from 'vue';
 import { useRouter } from 'vue-router'
@@ -41,40 +73,6 @@ async function searchSong() {
 }
 
 </script>
-
-<template>
-  <h1>vocadb搜索</h1>
-  <span class="noRefererConfig" style="display: none;"></span>
-  <el-button type="primary" @click="router.push('/menu')">返回目录</el-button>
-  <div class="search-box">
-    <el-input v-model="searchTitle" placeholder="歌名" @keyup.enter="searchSong">
-      <template #append>
-        <el-button :icon="Search" @click="searchSong" />
-      </template>
-    </el-input>
-  </div>
-  <el-table :data="songsData">
-    <el-table-column label="封面" width="200">
-      <template #default="scope">
-        <img :src="scope.row.mainPicture.urlThumb" alt="image" />
-      </template>
-    </el-table-column>
-    <el-table-column prop="name" label="歌名" />
-    <el-table-column prop="artistString" label="作者" />
-    <el-table-column prop="songType" label="类型" width="100" />
-    <el-table-column label="操作" width="120">
-      <template #default="scope">
-        <el-button type="primary" @click="selectSong(songsData[scope.$index].id)">选择歌曲</el-button>
-      </template>
-    </el-table-column>
-  </el-table>
-
-  <el-dialog v-model="showDialog" title="选择歌曲" width="800">
-    <SongDialog v-if="true" :SongData="selectedSongData" :key="selectedSongData?.song.id" />
-  </el-dialog>
-</template>
-
-
 <style scoped lang="scss">
 h1 {
 

@@ -1,0 +1,103 @@
+{% raw %}{{标题替换|{{lj|{% endraw %}{{ title }}}}}}
+
+{% raw %}{{虚拟歌手歌曲荣誉题头{% endraw %}
+{% for synthesizer in synthesizers -%}
+|{{ synthesizer }}
+{% endfor -%}
+}}
+
+{% raw %}{{VOCALOID_Songbox{% endraw %}
+|image = {{ title }}.jpg
+|图片信息 = illustration by {{''}}
+{%- if illustrators -%}
+  {{ join(illustrators) }}
+{%- else -%}
+  {{ join(producers) }}
+{%- endif %}
+|颜色 =
+|演唱 = {{ join(vocalists, ['inlink']) }}
+|歌曲名称 = {% raw %}{{lj|{% endraw %}{{ title }}}}
+|P主 = {{ join(vocalists, ['lj', 'inlink']) }}
+{% for pv in pvs -%}
+|{{ pv.service.abbr }}_id = {{ pv.id }}
+{% endfor -%}
+|其他资料 = {% for pv in pvs -%}
+  {% if pv.sameDay -%}
+    同日
+  {%- else -%}
+    于{{ pv.upload | date("yyyy年M月d日") }}
+  {%- endif -%}
+  投稿至{{ pv.service.name }}，再生数为{{l}}{{ pv.service.name }}Count|id={{ pv.id }}{{r}}
+  {%- if not loop.last %}<br/>{% endif -%}
+{% endfor %}
+}}
+
+{% raw %}{{Cquote|{{lj|投稿文原文}}{% endraw %}
+
+----
+
+投稿文译文|{{ join(producers, ['lj','inlink']) }}投稿文}}
+
+《'''{{ join(title, ['lj']) }}'''》（）是{{ join(producers, ['lj','inlink']) }}于
+{%- for uploadGroup in uploadGroups -%}
+  {{ uploadGroup.upload | date('yyyy年M月d日') }}投稿至
+  {%- for service in uploadGroup.services -%}
+    [[{{ service.name }}]]
+    {%- if not loop.last -%}
+    、
+    {%- endif -%}
+  {%- endfor -%}
+{%- if i != uploadGroups | length - 1 %}，{% endif -%}
+{%- endfor -%}
+的日语{{ type }}歌曲，由{{ join(vocalists, ['inlink']) }}演唱。
+
+
+== 歌曲 ==
+{% raw %}{{VOCALOID Songbox Introduction{% endraw %}
+|lbgcolor = black
+|color = white
+{% for category in staff %}
+|{{ category }} = {{ join(category, ['lj']) }}
+{% endfor -%}
+}}
+
+{{l}}BilibiliVideo|id={{ biliVideo }}{{r}}
+
+== 歌词 ==
+*翻译：xxx<ref>翻译转载自
+{%- if translatedLyrics -%}
+[{{translatedLyrics.url}} {{translatedLyrics.source}}]
+{%- else -%}
+xxx
+{%- endif -%}
+</ref>
+{%raw%}{{LyricsKai{% endraw %}
+|lstyle=
+|rstyle=
+|original=
+{% if originalLyrics -%}
+{{ originalLyrics.value }}
+{% endif -%}
+|translated=
+{% if translatedLyrics -%}
+{{ translatedLyrics.value }}
+{% endif -%}
+}}
+
+
+{% for producer in producers -%}
+{{l}}{{ producer }}{{r}}
+{% endfor %}
+{%- for vocalist in vocalists -%}
+{{l}}{{ vocalist }}{{r}}
+{% endfor %}
+== 注释与外部链接 ==
+<references/>
+
+[[分类:日本音乐作品]]
+{%- for synthesizer in synthesizers -%}
+[[分类:使用{{ synthesizer }}的歌曲]]
+{% endfor %}
+{%- for vocalist in vocalists -%}
+[[分类:{{ vocalist }}歌曲]]
+{% endfor %}

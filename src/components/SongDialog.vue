@@ -11,7 +11,7 @@
         <div>视频： {{ songStatus.pvs.join("、") }}</div>
       </div>
       <div style="display: flex; flex-direction: column; justify-content: center;">
-        <img :src="SongData.song.mainPicture.urlThumb" alt="image" />
+        <img :src="SongData.song.mainPicture.urlThumb" alt="image" referrerpolicy="no-referrer" style="width: 200px" />
         <el-button type="disabled" @click="output" style="margin-top: 10px;">生成条目</el-button>
         <el-button type="primary" @click="openVocadb" style="margin-top: 10px;">打开网页</el-button>
       </div>
@@ -26,25 +26,34 @@
   <div v-else>
     <div>加载中…………</div>
   </div>
+  <el-dialog v-model="entryVisible" title="条目文本">
+    <pre>{{ entryText }}</pre>
+  </el-dialog>
 </template>
 
 <script lang="ts" setup>
 import type { SelectedSong } from '@/types/vocadb';
+import { render } from '@/utils/entry';
+import { ref } from 'vue';
 
 const props = defineProps<{
   SongData: SelectedSong | undefined
 }>()
 
-const SongData = props.SongData
+const songData = props.SongData
+const entryVisible = ref(false)
+const entryText = ref<string>()
 
 async function output() {
-
+  const text = await render(songData)
+  entryText.value = text
+  entryVisible.value = true
 }
 
 // openExternal：用 window.open 替代
 function openVocadb() {
-  if (!SongData) return;
-  window.open(`https://vocadb.net/S/${SongData.song.id}`, '_blank');
+  if (!songData) return;
+  window.open(`https://vocadb.net/S/${songData.song.id}`, '_blank');
 }
 
 const songStatus = (() => {
@@ -53,13 +62,13 @@ const songStatus = (() => {
     pvs: [] as string[]
   }
 
-  if (SongData) {
+  if (songData) {
 
-    const lyrics = SongData.lyricsFromParents;
+    const lyrics = songData.lyricsFromParents;
     for (let i = 0; i < lyrics.length; i++) {
       if (lyrics[i].translationType == "Original") status.hasOriginalLyric = true;
     }
-    const pvs = SongData.pvs;
+    const pvs = songData.pvs;
     const services = ["NicoNicoDouga", "Youtube", "Bilibili"];
     for (const service of services) {  // 使用 for...of 遍历 services 数组
       for (let j = 0; j < pvs.length; j++) {  // 使用 j 遍历 pvs 数组
