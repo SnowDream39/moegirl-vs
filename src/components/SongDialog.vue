@@ -34,6 +34,7 @@
 <script lang="ts" setup>
 import type { SelectedSong } from '@/types/vocadb';
 import { render } from '@/utils/entry';
+import { ElMessage } from 'element-plus';
 import { ref } from 'vue';
 
 const props = defineProps<{
@@ -45,6 +46,7 @@ const entryVisible = ref(false)
 const entryText = ref<string>()
 
 async function output() {
+  ElMessage.info('正在生成条目，请稍后')
   const text = await render(songData)
   entryText.value = text
   entryVisible.value = true
@@ -74,7 +76,7 @@ const songStatus = (() => {
       for (let j = 0; j < pvs.length; j++) {  // 使用 j 遍历 pvs 数组
         const pv = pvs[j];
         if (pv.pvType == "Original" && pv.service == service) {
-          status.pvs.push(pv.pvId);
+          status.pvs.push(pv.service);
           break;  // 找到匹配项后跳出内层循环
         }
       }

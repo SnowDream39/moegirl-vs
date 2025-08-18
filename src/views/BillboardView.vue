@@ -22,8 +22,6 @@ onMounted(async () => {
 
 <template>
   <h1>billboard最新一期排名</h1>
-  <el-button type="primary" @click="router.push('/menu')">返回目录</el-button>
-  <!-- 遍历渲染 songs_data 数组 -->
   <el-table :data="songs_data">
     <el-table-column prop="current" label="排名" width="80" />
     <el-table-column label="封面" width="250">
