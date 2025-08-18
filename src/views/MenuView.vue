@@ -1,5 +1,16 @@
+<template>
+  <div class="P-login">
+    <img class="logo" id="logo" :src="logo" />
+    <div class="ipt-con">
+      <el-button type="primary" style="width: 100%" @click="router.push('/vocadb')">vocadb</el-button>
+    </div>
+    <div class="ipt-con">
+      <el-button type="primary" style="width: 100%" @click="billboard">billboard</el-button>
+    </div>
+  </div>
+</template>
+
 <script lang="ts" setup>
-import { onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import logo from '/logo.png'
 
@@ -10,24 +21,7 @@ const billboard = () => {
   router.push('/billboard')
 }
 
-onMounted(() => {
-  document.getElementById('logo').src = logo;
-})
-
-
 </script>
-
-<template>
-  <div class="P-login">
-    <img class="logo" id="logo" />
-    <div class="ipt-con">
-      <el-button type="primary" style="width: 100%" @click="router.push('/vocadb')">vocadb</el-button>
-    </div>
-    <div class="ipt-con">
-      <el-button type="primary" style="width: 100%" @click="billboard">billboard</el-button>
-    </div>
-  </div>
-</template>
 
 <style scoped lang="scss">
 .P-login {
