@@ -5,22 +5,15 @@
       <span @click="logoClicked" id="menu-button">
         ☰
       </span>
-      <span @click="router.push('/search')" id="search-mobile">
-        🔍
-      </span>
     </nav>
   </header>
   <el-drawer direction="ltr" v-model="asideVisible" :with-header="false"
     style="background: rgba(255,255,255,0.2);backdrop-filter: blur(12px);">
     <aside>
       <ul>
-        <li @click="jump('/user')">用户</li>
-        <li @click="jump('/board/vocaloid-daily-main/')">日刊</li>
-        <li @click="jump('/board/vocaloid-weekly-main/')">周刊</li>
-        <li @click="jump('/board/vocaloid-monthly-main/')">月刊</li>
-        <li @click="jump('/board/vocaloid-special')">特刊</li>
-        <li @click="jump('/pool')">统计</li>
-        <li @click="jump('/about')">关于</li>
+        <li @click="jump('/song')">歌曲</li>
+        <li @click="jump('/producer')">P主</li>
+        <li @click="jump('/billboard')">B榜</li>
       </ul>
     </aside>
   </el-drawer>

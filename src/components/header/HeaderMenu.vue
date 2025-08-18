@@ -10,17 +10,6 @@
     <el-menu-item index="/song">歌曲</el-menu-item>
     <el-menu-item index="/producer">P主</el-menu-item>
     <el-menu-item index="/billboard">B榜</el-menu-item>
-    <el-menu-item index="/about">关于</el-menu-item>
-    <el-menu-item index="/search">
-      <el-icon>
-        <component :is="Search" />
-      </el-icon>
-    </el-menu-item>
-    <el-menu-item index="/user">
-      <el-icon>
-        <component :is="User" />
-      </el-icon>
-    </el-menu-item>
   </el-menu>
 </template>
 
