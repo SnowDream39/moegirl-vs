@@ -1,6 +1,6 @@
 <template>
   <footer>
-    <span>©2025 星幻丶碎梦</span>
+    <span>©2024-2025 星幻丶碎梦</span>
   </footer>
 </template>
 
@@ -9,7 +9,6 @@ footer {
   box-sizing: border-box;
   margin-top: 20px;
   padding: 20px 0;
-  background-color: rgba($color: #fff, $alpha: 0.5);
   display: flex;
   flex-direction: column;
   justify-content: center;

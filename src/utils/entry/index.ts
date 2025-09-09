@@ -22,6 +22,12 @@ const synthesizerNames = s as Record<string, string>
 
 //  ========  类型定义  =========
 
+export interface OutputConfig {
+  ruby: boolean
+}
+
+type SongData = any
+
 interface VocadbArtist {
   id: string
   name: string
@@ -52,23 +58,6 @@ interface UploadGroup {
   upload: DateTime
   services: Service[]
 }
-
-//   =========  全局变量  ==========
-
-/**
- * 来自 vocadb 的原始数据
- */
-let songData: any = {}
-
-/**
- * 键的名称与 vocadb 上的名称相同，首字母大写，单数形式
- */
-let staff: any = {}
-let producers: string[] = []
-let synthesizers: string[] = []
-
-let pvs: Pv[] = []
-let uploadGroups: UploadGroup[] = []
 
 // ========== 小工具函数  ==========
 
@@ -104,11 +93,11 @@ async function toPhotranse(lyrics: string) {
 
 //  ========== 工作流函数  =============
 
-function makeTitle() {
+function makeTitle(songData: SongData) {
   return songData.song.name
 }
 
-function makeAllTitles() {
+function makeAllTitles(songData: SongData) {
   return [songData.song.name] + songData.additionalNames.split(', ')
 }
 
@@ -138,9 +127,10 @@ function getVocalistName(artist: VocadbArtist, translated: boolean) {
   }
 }
 
-async function makeStaff() {
+async function makeStaff(songData: SongData) {
   let roles: string
   const staff: any = {}
+  const producers: string[] = []
   for (const artist of songData.artists) {
     if (artist.categories === 'Other') {
       roles = artist.effectiveRoles
@@ -165,7 +155,7 @@ async function makeStaff() {
   return staff
 }
 
-function makeDisplayStaff() {
+function makeDisplayStaff(staff: any) {
   // todo
   const displayStaff = { ...staff }
   for (const category in displayStaff) {
@@ -175,7 +165,7 @@ function makeDisplayStaff() {
   return displayStaff
 }
 
-function makeType() {
+function makeType(songData: SongData) {
   const type = songData.song.songType
   if (type === 'Original') {
     return '原创'
@@ -184,11 +174,35 @@ function makeType() {
   }
 }
 
-function makeProducers() {
+async function makeProducers(songData: SongData) {
+  let roles: string
+  const staff: any = {}
+  const producers: string[] = []
+  for (const artist of songData.artists) {
+    if (artist.categories === 'Other') {
+      roles = artist.effectiveRoles
+    } else if (artist.categories === 'Vocalist') {
+      roles = 'Vocalist'
+      artist.name = getVocalistName(artist.artist, true)
+    } else if (artist.categories.includes('Producer')) {
+      producers.push(artist.name)
+      if (artist.effectiveRoles === 'Default') {
+        roles = 'Producer' // 词·曲
+      } else {
+        roles = artist.effectiveRoles
+      }
+    } else {
+      roles = artist.categories
+    }
+    for (const role of roles.split(', ')) {
+      addToGroup(staff, role, artist.name)
+    }
+  }
+  staff.Vocalist = Array.from(new Set(staff.Vocalist))
   return producers
 }
 
-function makeVocalists() {
+function makeVocalists(songData: SongData) {
   const vocalists: string[] = []
   for (const artist of songData.artists) {
     if (artist.categories === 'Vocalist' && !artist.isSupport)
@@ -197,7 +211,8 @@ function makeVocalists() {
   return Array.from(new Set(vocalists))
 }
 
-function makeSynthesizers() {
+function makeSynthesizers(songData: SongData) {
+  const synthesizers: string[] = []
   for (const artist of songData.artists) {
     if (artist.categories.includes('Vocalist')) {
       const type = artist.artist.artistType
@@ -208,7 +223,7 @@ function makeSynthesizers() {
   return Array.from(new Set(synthesizers))
 }
 
-function makeIllustrators() {
+function makeIllustrators(staff: any) {
   // to be improved
   const illustrators = 'Illustrator' in staff ? staff.Illustrator : staff.Animator
   return illustrators
@@ -222,7 +237,7 @@ const serviceFormat = (service: 'NicoNicoDouga' | 'Youtube' | 'Bilibili') => {
   }[service]
 }
 
-function makePvs() {
+function makePvs(songData: SongData) {
   const pvs: Pv[] = []
   for (const pv of songData.pvs) {
     if (
@@ -258,7 +273,7 @@ function makePvs() {
   return { pvs, uploadGroups }
 }
 
-function makeBiliVideo() {
+function makeBiliVideo(pvs: Pv[]) {
   for (const pv of pvs) {
     if (pv.service.abbr === 'bb') {
       return pv.id
@@ -267,12 +282,16 @@ function makeBiliVideo() {
   return ''
 }
 
-async function makeLyrics(type: 'Original' | 'Translation') {
+async function makeLyrics(
+  songData: SongData,
+  type: 'Original' | 'Translation',
+  ruby: boolean = false,
+) {
   for (const lyricInfo of songData.lyricsFromParents) {
     if (type === 'Original') {
       if (lyricInfo.translationType === 'Original') {
         const lyrics = await get_lyrics(lyricInfo.id)
-        lyrics.value = await toPhotranse(lyrics.value)
+        if (ruby) lyrics.value = await toPhotranse(lyrics.value)
         return lyrics
       }
     } else {
@@ -284,27 +303,29 @@ async function makeLyrics(type: 'Original' | 'Translation') {
   return ''
 }
 
-async function makeWikitext(): Promise<string> {
+export async function render(songData: any, config: OutputConfig): Promise<string> {
+  const { pvs, uploadGroups } = makePvs(songData)
+  const staff = await makeStaff(songData)
   const data = {
     l: '{{',
     r: '}}',
-    staff: makeDisplayStaff(),
-    title: makeTitle(),
-    allTitles: makeAllTitles(),
-    type: makeType(),
-    producers: makeProducers(),
-    vocalists: makeVocalists(),
-    synthesizers: makeSynthesizers(),
-    illustrators: makeIllustrators(),
-    pvs: pvs,
-    uploadGroups: uploadGroups,
-    biliVideo: await makeBiliVideo(),
-    originalLyrics: await makeLyrics('Original'),
-    translatedLyrics: await makeLyrics('Translation'),
+    staff: makeDisplayStaff(staff),
+    title: makeTitle(songData),
+    allTitles: makeAllTitles(songData),
+    type: makeType(songData),
+    producers: await makeProducers(songData),
+    vocalists: makeVocalists(songData),
+    synthesizers: makeSynthesizers(songData),
+    illustrators: makeIllustrators(staff),
+    pvs,
+    uploadGroups,
+    biliVideo: makeBiliVideo(pvs),
+    originalLyrics: await makeLyrics(songData, 'Original', config.ruby),
+    translatedLyrics: await makeLyrics(songData, 'Translation'),
     join: join,
   }
 
-  console.log(data.uploadGroups)
+  console.log(data)
 
   const env = nunjucks.configure('views', {
     autoescape: false,
@@ -320,17 +341,4 @@ async function makeWikitext(): Promise<string> {
     }
   })
   return env.renderString(template, data)
-}
-
-export async function render(data: any) {
-  songData = data
-  staff = {}
-  producers = []
-  synthesizers = []
-  pvs = []
-  uploadGroups = []
-  staff = await makeStaff()
-  ;({ pvs, uploadGroups } = makePvs())
-  const content = await makeWikitext()
-  return content
 }

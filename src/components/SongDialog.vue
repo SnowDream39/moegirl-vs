@@ -1,7 +1,6 @@
 <template>
   <div v-if="SongData">
-
-    <div style="display: flex; justify-content: space-between;">
+    <div class="flex justify-between">
       <div>
         <h2>歌曲信息</h2>
         <div>歌名： {{ SongData.song.name }}</div>
@@ -9,11 +8,12 @@
         <div>类型： {{ SongData.song.songType }}</div>
         <div>歌词： {{ songStatus.hasOriginalLyric ? "有" : "无" }}</div>
         <div>视频： {{ songStatus.pvs.join("、") }}</div>
+        <el-switch v-model="config.ruby" active-text="启用注音" />
       </div>
-      <div style="display: flex; flex-direction: column; justify-content: center;">
+      <div class="flex flex-col justify-center">
         <img :src="SongData.song.mainPicture.urlThumb" alt="image" referrerpolicy="no-referrer" style="width: 200px" />
-        <el-button type="disabled" @click="output" style="margin-top: 10px;">生成条目</el-button>
-        <el-button type="primary" @click="openVocadb" style="margin-top: 10px;">打开网页</el-button>
+        <el-button type="disabled" @click="output" class="mt-2">生成条目</el-button>
+        <el-button type="primary" @click="openVocadb" class="mt-2">打开网页</el-button>
       </div>
     </div>
     <h2>STAFF</h2>
@@ -27,15 +27,17 @@
     <div>加载中…………</div>
   </div>
   <el-dialog v-model="entryVisible" title="条目文本">
-    <pre>{{ entryText }}</pre>
+    <pre class="text-wrap">{{ entryText }}</pre>
   </el-dialog>
 </template>
 
 <script lang="ts" setup>
 import type { SelectedSong } from '@/types/vocadb';
-import { render } from '@/utils/entry';
-import { ElMessage } from 'element-plus';
+import { render, type OutputConfig } from '@/utils/entry';
+import { ElMessage, ElSwitch } from 'element-plus';
 import { ref } from 'vue';
+
+
 
 const props = defineProps<{
   SongData: SelectedSong | undefined
@@ -44,10 +46,14 @@ const props = defineProps<{
 const songData = props.SongData
 const entryVisible = ref(false)
 const entryText = ref<string>()
+const config = ref<OutputConfig>({
+  ruby: true
+})
+
 
 async function output() {
   ElMessage.info('正在生成条目，请稍后')
-  const text = await render(songData)
+  const text = await render(songData, config.value)
   entryText.value = text
   entryVisible.value = true
 }

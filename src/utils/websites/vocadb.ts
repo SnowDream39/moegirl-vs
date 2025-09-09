@@ -12,12 +12,12 @@ async function getData(url: string, params: Record<string, any>) {
   return response.data
 }
 
-async function fetch_songs(name: string) {
+export async function search_songs(name: string, page: number = 1, pageSize: number = 10) {
   const url = 'https://vocadb.net/api/songs'
   const params = {
-    start: 0,
+    start: pageSize * (page - 1),
     getTotalCount: true,
-    maxResults: 10,
+    maxResults: pageSize,
     query: name,
     fields: 'AdditionalNames,MainPicture', // 是请求什么，不是根据什么搜索
     lang: 'Default',
@@ -46,15 +46,6 @@ async function fetch_vocalist(id: number) {
   const url = `https://vocadb.net/api/artists/${id}/details`
   const params = {}
   return getData(url, params)
-}
-
-export async function search_songs(name: string) {
-  try {
-    const data = await fetch_songs(name)
-    return data
-  } catch (error) {
-    console.log('Error:', error)
-  }
 }
 
 /**
