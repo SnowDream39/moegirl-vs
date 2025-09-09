@@ -1,9 +1,7 @@
 <script lang="ts" setup>
-import { useRouter } from 'vue-router'
 import { ref, onMounted } from 'vue';
 import { billboard } from '@/utils/websites/billboard';
 import type { SongData } from '@/types/billboard';
-const router = useRouter()
 
 
 const songs_data = ref<SongData[]>();  // 将 songs_data 声明为响应式数据

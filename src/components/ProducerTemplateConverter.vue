@@ -1,9 +1,11 @@
 <template>
-  <div>
+  <div class="w-90% max-w-[600px]">
+    <p>这个工具可以把过去使用的一些模板无损转换为Producer_Music_Card模板。</p>
+    <p>如果使用Producer_Song模板，可以填入P主的名称有多个名称就填入多个，确保写法与wikitext中的写法相同。转换器会自动识别P主的职能</p>
     <el-select v-model="originalTemplate">
       <el-option v-for="item in originalTemplates" :key="item" :label="item" :value="item" />
     </el-select>
-    <el-input v-model="producerName" placeholder="P主名称" class="my-2" />
+    <el-input-tag v-model="producerNames" placeholder="P主名称" tag-type="primary" class="my-2" />
     <el-input type="textarea" :rows="10" v-model="input" class="w-full"></el-input>
     <el-button @click="convert">转换</el-button>
 
@@ -16,18 +18,18 @@
 
 <script setup lang="ts">
 import { ref } from 'vue';
-import { ElSelect, ElOption, ElButton, ElDialog, ElInput, ElMessage } from 'element-plus';
+import { ElSelect, ElOption, ElButton, ElDialog, ElInput, ElMessage, ElInputTag } from 'element-plus';
 import { modifyTemplates, type Template } from '@/utils/WikiParse';
 
-const producerName = ref<string>('');
+const producerNames = ref<string[]>([]);
 const input = ref<string>('');
-const originalTemplate = ref<string>('Producer_Music');
+const originalTemplate = ref<string>('Producer_Song');
 const convertedText = ref<string>('');
 const resultVisible = ref<boolean>(false);
 
 const originalTemplates: string[] = [
-  'Producer_Music',
-  'Producer_Song'
+  'Producer_Song',
+  'Producer_Music'
 ]
 
 const roleNames = {
@@ -52,10 +54,10 @@ function convert() {
     names = ['Producer_Song', 'Producer Song'];
     modify = (tl: Template) => {
       tl.name = 'Producer_Music_Card';
-      if (producerName.value) {
-        const roles: string[] = [];
-        for (const key in roleNames) {
-          if (tl.data[key] && tl.data[key].includes(producerName.value)) {
+      const roles: string[] = [];
+      for (const key in roleNames) {
+        for (const producerName of producerNames.value) {
+          if (tl.data[key] && tl.data[key].includes(producerName)) {
             roles.push(roleNames[key as keyof typeof roleNames]);
           }
         }

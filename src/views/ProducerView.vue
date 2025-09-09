@@ -5,7 +5,6 @@
     <p>这个模板非常漂亮，大家都应该使用。</p>
   </div>
   <h2 class="h2">转换工具</h2>
-  <p>这个工具可以把过去使用的一些模板无损转换为Producer_Music_Card模板。</p>
   <ProducerTemplateConverter />
 </template>
 
