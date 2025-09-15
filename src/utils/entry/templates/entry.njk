@@ -1,11 +1,9 @@
 {% raw %}{{标题替换|{{lj|{% endraw %}{{ title }}}}}}
-
 {% raw %}{{虚拟歌手歌曲荣誉题头{% endraw %}
 {%- for synthesizer in synthesizers -%}
 |{{ synthesizer }}
 {%- endfor -%}
 }}
-
 {% raw %}{{VOCALOID_Songbox{% endraw %}
 |image = {{ title }}.jpg
 |图片信息 = illustration by {{''}}
@@ -17,7 +15,7 @@
 |颜色 =
 |演唱 = {{ join(vocalists, ['inlink']) }}
 |歌曲名称 = {% raw %}{{lj|{% endraw %}{{ title }}}}
-|P主 = {{ join(vocalists, ['lj', 'inlink']) }}
+|P主 = {{ join(producers, ['lj', 'inlink']) }}
 {% for pv in pvs -%}
 |{{ pv.service.abbr }}_id = {{ pv.id }}
 {% endfor -%}
@@ -51,14 +49,15 @@
 {%- endfor -%}
 的日语{{ type }}歌曲，由{{ join(vocalists, ['inlink']) }}演唱。
 
-
 == 歌曲 ==
 {% raw %}{{VOCALOID Songbox Introduction{% endraw %}
 |lbgcolor = black
-|color = white
-{% for category in staff %}
-|{{ category }} = {{ join(category, ['lj']) }}
-{% endfor -%}
+|ltcolor  = white
+|color    = white
+{%- for key, value in staff %}
+|group{{loop.index}}   = {{ key }}
+|list{{loop.index}}    = {{ join(value, ['lj']) }}
+{%- endfor %}
 }}
 
 {{l}}BilibiliVideo|id={{ biliVideo }}{{r}}
@@ -83,7 +82,6 @@ xxx
 {{ translatedLyrics.value }}
 {% endif -%}
 }}
-
 
 {% for producer in producers -%}
 {{l}}{{ producer }}{{r}}

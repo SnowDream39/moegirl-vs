@@ -27,6 +27,7 @@
     <div>加载中…………</div>
   </div>
   <el-dialog v-model="entryVisible" title="条目文本">
+    <el-button @click="copyToClipboard(entryText)" type="primary">复制</el-button>
     <pre class="text-wrap">{{ entryText }}</pre>
   </el-dialog>
 </template>
@@ -47,7 +48,7 @@ const songData = props.SongData
 const entryVisible = ref(false)
 const entryText = ref<string>()
 const config = ref<OutputConfig>({
-  ruby: true
+  ruby: false
 })
 
 
@@ -94,5 +95,11 @@ const songStatus = (() => {
 })()
 
 
+const copyToClipboard = async (text: string | undefined) => {
+  if (text) {
+    await navigator.clipboard.writeText(text)
+    ElMessage('复制成功！')
+  }
+}
 
 </script>

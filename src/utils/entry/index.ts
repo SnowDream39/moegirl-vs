@@ -325,7 +325,7 @@ export async function render(songData: any, config: OutputConfig): Promise<strin
     join: join,
   }
 
-  console.log(data)
+  console.log(data.staff)
 
   const env = nunjucks.configure('views', {
     autoescape: false,
@@ -334,7 +334,6 @@ export async function render(songData: any, config: OutputConfig): Promise<strin
   env.addFilter('join', join)
   env.addFilter('date', function (dateObj: DateTime, formatStr: string = 'yyyy年M月d日') {
     try {
-      console.log(dateObj)
       return dateObj.toFormat(formatStr)
     } catch {
       return 'Invalid Date'

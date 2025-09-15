@@ -1,6 +1,6 @@
 <template>
   <div
-    class="relative rounded-lg w-[330px] h-[8em] m-1 border-2 border-solid border-black shadow-lg shadow-gray-300 grid overflow-hidden text-shadow-md text-shadow-white dark:text-shadow-black cursor-pointer dark:text-white *:overflow-hidden *:text-overflow-clip *:white-space-nowrap">
+    class="relative rounded-lg w-[330px] h-[8em] m-1 border-2 border-solid border-black shadow-lg shadow-gray-300 grid overflow-hidden text-shadow-md text-shadow-white dark:text-shadow-black! cursor-pointer dark:text-white *:overflow-hidden *:text-overflow-clip *:white-space-nowrap">
     <div class="relative z-1 p-2 bg-white/50 dark:bg-black/70">
       <div class="h-7 flex flex-row justify-between items-center">
         <div>{{ pubdate }}</div>
