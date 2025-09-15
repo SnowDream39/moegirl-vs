@@ -1,3 +1,4 @@
 onlyBuiltDependencies:
   - esbuild
+  - vue-demi
   - wtf_wikipedia

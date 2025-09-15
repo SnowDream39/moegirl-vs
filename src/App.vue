@@ -12,7 +12,7 @@
 import Header from '@/components/header/Header.vue'
 import Footer from '@/components/Footer.vue'
 import { ElConfigProvider } from 'element-plus';
-import { zhCn } from 'element-plus/es/locales.mjs';
+import zhCn from 'element-plus/es/locale/lang/zh-cn';
 </script>
 
 <style scoped></style>
